@@ -1,0 +1,12 @@
+# Ignore invisible files unless explicitly whitelisted
+**/.*
+!.gitignore
+!.github
+
+# Ignore Python build/cache files
+**/*.pyc
+**/__pycache__
+build
+build/*
+dist
+*.egg-info
