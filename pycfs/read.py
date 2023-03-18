@@ -10,6 +10,12 @@ from .structure import CFS_EQUALSPACED, DATA_TYPES, VAR_BYTES, fields, field_siz
 from .frame import Frame
 
 
+# Name regex for largely-unused CFS variables created by Signal
+signal_junk = [
+    "User\d+", "RTot", "SysD", "RAcc", "CMemb", "RMemb",
+    "FCom", "SysF", "ClF",
+]
+
 
 def from_header(raw, field_size, as_float=False):
     """Convert raw bytes from the CFS header to a useful Python data format.
@@ -138,7 +144,7 @@ def read_cfs_header(f):
     }
 
 
-def read_cfs(filename):
+def read_cfs(filename, filter_vars=True):
 
     if not os.path.exists(filename):
         raise RuntimeError("File '{0}' does not exist.".format(filename))
@@ -148,6 +154,16 @@ def read_cfs(filename):
 
         # Read in header
         header = read_cfs_header(cfs)
+        
+        # By default, filter out rarely-used internal Signal vars
+        if filter_vars:
+            junk = "^(" + "|".join(signal_junk) + ")"
+            header['filevars'] = [
+                v for v in header['filevars'] if not re.match(junk, v['name'])
+            ]
+            header['dsvars'] = [
+                v for v in header['dsvars'] if not re.match(junk, v['name'])
+            ]
 
         # Read in file variables
         file_vars = {}

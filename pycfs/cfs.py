@@ -82,10 +82,9 @@ class CFSInfo(object):
 class CFS(object):
     """An object containing the data and metadata from a CED CFS file.
 
-    CFS files store data in separate frames (i.e. trials, windows of data), each
-    of which contains both signal data and metadata for a given recording. For
-    CFS files generated from CED Signal, one frame typically responds to one
-    trial or sweep of data.
+    CFS files store data in separate frames (a.k.a. data sections), each of
+    which contains both signal data and metadata for a given window of
+    recording.
 
     In addition to frames of data, CFS files also contain file-level metadata in
     the form of file variables, which can store values as well as their units.
@@ -95,6 +94,10 @@ class CFS(object):
 
     Args:
         filepath (str): The path of the CFS file to open.
+        keep_internal (bool, optional): If True, internal Signal variables that
+            rarely contain useful data (e.g. ``FCom4``, ``SysFI4``) will be
+            included in ``filevars`` and ``framevars`` instead of being ignored
+            during import. Defaults to False.
 
     Attributes:
         info (:obj:`CFSInfo`): An object containing basic CFS metadata for the
@@ -109,7 +112,7 @@ class CFS(object):
             the file.
 
     """
-    def __init__(self, filepath):
+    def __init__(self, filepath, keep_internal=False):
 
         self._raw = None
         self.info = None
@@ -119,15 +122,15 @@ class CFS(object):
         self.framevars = {}
         self.frames = []
 
-        self._load_cfs(filepath)
+        self._load_cfs(filepath, keep_internal)
 
     def __repr__(self):
         s = "CFS({0} channels, {1} frames)"
         return s.format(self.n_channels, self.n_frames)
 
-    def _load_cfs(self, filepath):
+    def _load_cfs(self, filepath, keep_internal):
         # Actually parse the raw data into Python
-        dat = read_cfs(filepath)
+        dat = read_cfs(filepath, not keep_internal)
         self._raw = dat
 
         # Gather basic file metadata
