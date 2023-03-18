@@ -84,20 +84,35 @@ class CFS(object):
 
     CFS files store data in separate frames (a.k.a. data sections), each of
     which contains both signal data and metadata for a given window of
-    recording.
+    recording::
+
+        dat = CFS("p001_session1.cfs")
+
+        # List all channels in the file along with their units
+        print("Channels:")
+        for name, units in dat.channels.items():
+            tmp = " - {0}: (x-axis = '{1}', y-axis = '{2}')"
+            print(tmp.format(name, units['x_units'], units['y_units']))
+
+        # Print the mean EMG amplitude for each frame in the file
+        i = 1
+        for f in dat.frames:
+            mean_emg = np.mean(f.data['EMG'])
+            print("Mean EMG for frame {0}: {1}".format(i, mean_emg))
+            i += 1
 
     In addition to frames of data, CFS files also contain file-level metadata in
     the form of file variables, which can store values as well as their units.
-    These are stored in a ``{name: data}`` dictionary, with ``name`` being the
-    name of each variable, and ``data`` being a dict containing its value and
+    These are stored in a ``{name: data}`` dictionary, with 'name' being the
+    name of each variable, and 'data' being a dict containing its value and
     unit (e.g. ``{'age': {'value': 25, 'units': 'years'}}``).
 
     Args:
         filepath (str): The path of the CFS file to open.
-        keep_internal (bool, optional): If True, internal Signal variables that
-            rarely contain useful data (e.g. ``FCom4``, ``SysFI4``) will be
-            included in ``filevars`` and ``framevars`` instead of being ignored
-            during import. Defaults to False.
+        keep_internal (bool, optional): If True, internal Signal frame and file
+            variables that rarely contain useful data (e.g. 'FCom4', 'SysFI4')
+            will be preserved instead of ignored during import. Defaults to
+            False.
 
     Attributes:
         info (:obj:`CFSInfo`): An object containing basic CFS metadata for the
